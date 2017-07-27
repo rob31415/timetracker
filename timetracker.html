@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+    <title>My first HTML page. I'm 4 year old!</title>
+</head>
+
+<body>
+    <center>
+    <h1>Timetracker</h1>
+    <br>
+    <h2>To Go: </h2>
+    <h2 id="eta"></h2>
+    <button type="button" onclick="statusButtonClicked()" id="inout"></button>
+    <button type="button" onclick="resetButtonClicked()">reset</button>
+    <div id="timeTable"></div>
+
+    </center>
+
+    <script>
+
+/*
+var output = "LOCALSTORAGE DATA:\n------------------------------------\n";
+if (localStorage) {
+if (localStorage.length) {
+for (var i = 0; i < localStorage.length; i++) {
+    output += localStorage.key(i) + ': ' + localStorage.getItem(localStorage.key(i)) + '\n';
+}
+}
+*/
+
+
+function getOrInitStatus() {
+    status = window.localStorage.getItem('status');
+    if(typeof status === 'undefined') {
+        status = "in";
+    }
+    return status;
+}
+
+function toggleStatus(status) {
+    newStatus = status=="in" ? "out" : "in";
+    return newStatus;
+}
+
+function updateButton(status) {
+    button = document.getElementById("inout");
+    button.innerHTML = "click if you're going " + status;
+}
+
+function retrieveArray(name) {
+    data = window.localStorage.getItem(name);
+    console.dir(data);
+    if(typeof data === 'undefined' || data === null) {
+        console.dir("new array");
+        return new Array();
+    }
+    console.dir("parse crap");
+    return JSON.parse(data);    //supposed to be array
+}
+
+function retrieve() {
+    let retVal = new Map();
+    retVal.set("in", retrieveArray('in'));
+    retVal.set("out", retrieveArray('out'));
+    return retVal;
+}
+
+function appendAndStore(status, time) {
+    times = retrieve();
+    times.get(status).push(time);
+    window.localStorage.setItem('in', JSON.stringify(times.get("in")));
+    window.localStorage.setItem('out', JSON.stringify(times.get("out")));
+}
+
+function statusButtonClicked() {
+    status = getOrInitStatus();
+    newStatus = toggleStatus(status);
+    window.localStorage.setItem('status', newStatus);
+    updateButton(status);
+    appendAndStore(newStatus, Date.now());
+}
+
+function initStatusButton() {
+    button = document.getElementById("inout");
+    button.innerHTML = "click if you're going " + toggleStatus(getOrInitStatus());
+}
+
+function resetButtonClicked() {
+    if(window.confirm("really delete all stored data?")) {
+        window.localStorage.removeItem('in');
+        window.localStorage.removeItem('out');
+        window.localStorage.setItem('status', 'out');
+        initStatusButton();
+    }
+}
+
+function renderTimes() {
+    area = document.getElementById("timeTable");
+}
+
+initStatusButton();
+    </script>
+</body>
+</html> 

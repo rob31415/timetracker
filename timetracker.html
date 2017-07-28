@@ -2,104 +2,220 @@
 
 <html>
 <head>
-    <title>My first HTML page. I'm 4 year old!</title>
+    <title>I'm 4 year old and this is my first HTML page!</title>
 </head>
 
 <body>
-    <center>
-    <h1>Timetracker</h1>
-    <br>
-    <h2>To Go: </h2>
-    <h2 id="eta"></h2>
-    <button type="button" onclick="statusButtonClicked()" id="inout"></button>
-    <button type="button" onclick="resetButtonClicked()">reset</button>
-    <div id="timeTable"></div>
 
+    <center>
+    <h1>timetracker</h1>
+    <div>
+        <ul>
+            <li id="total"></li>
+            <li id="togo"></li>
+            <li id="eta"></li>
+        </ul>
+    </div>
+    <button type="button" onclick="statusButtonClicked()" id="inout"></button>
+    <table id="timeTable"></table>
+    <button type="button" onclick="resetButtonClicked()" id="reset">reset</button>
     </center>
+
+
+
+    <style>
+        body {
+            font-family: Helvetica;
+        }
+        div {
+            background-color: grey;
+            color: white;
+            font-size: 20px;
+            padding: 1px;
+        }
+        li {
+            display: inline;
+            padding: 20px;
+        }
+        button {
+            box-shadow: 0px 10px 14px -7px rgb(18, 31, 9);
+            border-radius: 8px;
+            border: 4px solid rgb(220, 220, 220);
+            display: inline-block;
+            cursor: pointer;
+            color: rgb(255, 255, 255);
+            font-family: Arial;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 13px 32px;
+            text-decoration: none;
+            text-shadow: 0px 1px 0px rgb(66, 102, 30);
+            margin: 20px;        
+        }
+        #inout {
+            background: rgb(86, 204, 90) linear-gradient(to bottom, rgb(86, 204, 90) 5%, rgb(62, 156, 73) 100%) repeat scroll 0% 0%;
+        }
+        #reset {
+            background: rgb(194, 66, 66) linear-gradient(to bottom, rgb(194, 66, 66) 5%, rgb(156, 62, 62) 100%) repeat scroll 0% 0%;
+        }
+
+        table  {
+            text-align: center;
+            border-color:#ccc;
+            border-width:1px;
+            border-style:solid;
+            margin: 20px;
+            width: 200px;
+        }
+        td {
+            font-family:Arial, sans-serif;
+            font-size:16px;
+            padding:10px 40px;
+            border-style:solid;
+            border-width:0px;
+        }
+        tr:nth-child(even) {
+          background: #D0E4F5;
+        }
+    </style>
+
 
     <script>
 
-/*
-var output = "LOCALSTORAGE DATA:\n------------------------------------\n";
-if (localStorage) {
-if (localStorage.length) {
-for (var i = 0; i < localStorage.length; i++) {
-    output += localStorage.key(i) + ': ' + localStorage.getItem(localStorage.key(i)) + '\n';
-}
-}
-*/
+        function getOrInitStatus() {
+            status = window.localStorage.getItem('status');
+            if(typeof status === 'undefined') {
+                status = "in";
+            }
+            return status;
+        }
 
+        function toggleStatus(status) {
+            newStatus = status=="in" ? "out" : "in";
+            return newStatus;
+        }
 
-function getOrInitStatus() {
-    status = window.localStorage.getItem('status');
-    if(typeof status === 'undefined') {
-        status = "in";
-    }
-    return status;
-}
+        function updateButton(status) {
+            button = document.getElementById("inout");
+            button.innerHTML = "click if you're going " + status;
+        }
 
-function toggleStatus(status) {
-    newStatus = status=="in" ? "out" : "in";
-    return newStatus;
-}
+        function retrieveArray(name) {
+            data = window.localStorage.getItem(name);
+            //console.dir(data);
+            if(data) {
+                return JSON.parse(data);    //supposed to be array
+            }        
+            return new Array();
+        }
 
-function updateButton(status) {
-    button = document.getElementById("inout");
-    button.innerHTML = "click if you're going " + status;
-}
+        function retrieve() {
+            let retVal = new Map();
+            retVal.set("in", retrieveArray('in'));
+            retVal.set("out", retrieveArray('out'));
+            return retVal;
+        }
 
-function retrieveArray(name) {
-    data = window.localStorage.getItem(name);
-    console.dir(data);
-    if(typeof data === 'undefined' || data === null) {
-        console.dir("new array");
-        return new Array();
-    }
-    console.dir("parse crap");
-    return JSON.parse(data);    //supposed to be array
-}
+        function appendAndStore(status, time) {
+            times = retrieve();
+            times.get(status).push(time);
+            window.localStorage.setItem('in', JSON.stringify(times.get("in")));
+            window.localStorage.setItem('out', JSON.stringify(times.get("out")));
+        }
 
-function retrieve() {
-    let retVal = new Map();
-    retVal.set("in", retrieveArray('in'));
-    retVal.set("out", retrieveArray('out'));
-    return retVal;
-}
+        function statusButtonClicked() {
+            status = getOrInitStatus();
+            newStatus = toggleStatus(status);
+            window.localStorage.setItem('status', newStatus);
+            updateButton(status);
+            appendAndStore(newStatus, Date.now());
+            renderTimes();
+        }
 
-function appendAndStore(status, time) {
-    times = retrieve();
-    times.get(status).push(time);
-    window.localStorage.setItem('in', JSON.stringify(times.get("in")));
-    window.localStorage.setItem('out', JSON.stringify(times.get("out")));
-}
+        function initStatusButton() {
+            button = document.getElementById("inout");
+            button.innerHTML = "click if you're going " + toggleStatus(getOrInitStatus());
+        }
 
-function statusButtonClicked() {
-    status = getOrInitStatus();
-    newStatus = toggleStatus(status);
-    window.localStorage.setItem('status', newStatus);
-    updateButton(status);
-    appendAndStore(newStatus, Date.now());
-}
+        function resetButtonClicked() {
+            if(window.confirm("really delete all stored data?")) {
+                window.localStorage.removeItem('in');
+                window.localStorage.removeItem('out');
+                window.localStorage.setItem('status', 'out');
+                initStatusButton();
+                renderTimes();
+            }
+        }
 
-function initStatusButton() {
-    button = document.getElementById("inout");
-    button.innerHTML = "click if you're going " + toggleStatus(getOrInitStatus());
-}
+        function workTimeSinceLastIn()
+        {
+            times = retrieve();
+            if(times.get("in").length === times.get("out").length + 1)
+            {
+                return Date.now() - times.get("in")[times.get("in").length-1];
+            }
+            return 0;
+        }
 
-function resetButtonClicked() {
-    if(window.confirm("really delete all stored data?")) {
-        window.localStorage.removeItem('in');
-        window.localStorage.removeItem('out');
-        window.localStorage.setItem('status', 'out');
+        function tryToGetFormattedDate(txt, utc=false) {
+            function pad(num) {
+                return ("00" + num).substr(-2,2);
+            }
+            if(txt)
+            {
+                let time = new Date(txt);
+                if(isNaN(time)) {
+                     return txt;
+                } else {
+                    if(utc) {
+                        return pad(time.getUTCHours()) + ":" + pad(time.getUTCMinutes()) + ":" + pad(time.getUTCSeconds());
+                    } else {
+                        return pad(time.getHours()) + ":" + pad(time.getMinutes()) + ":" + pad(time.getSeconds());
+                    }
+
+                }
+            } else {
+                return "---";
+            }
+        }
+
+        function renderTimes() {
+            let tbl = document.getElementById("timeTable");
+            let ar = [retrieve().get("in"), retrieve().get("out")];
+
+            //Convert rows to columns
+            let r = ar[0].map(function(col, i) {
+              return ar.map(function(row) {
+                return row[i];
+              });
+            });
+
+            let total = 0;
+            tbl.innerHTML = "<th>in</th><th>out</th><th>subtotal</th>"
+            r.forEach(function(e) {
+                let diff = e[1] - e[0];
+                tbl.innerHTML += '<tr><td>' + tryToGetFormattedDate(e[0]) + '</td><td>' + tryToGetFormattedDate(e[1]) + '</td><td>' +
+                    tryToGetFormattedDate(diff, true) + '</td></tr>'
+                if(!isNaN(diff)) {
+                    total = total + diff;
+                }
+            });
+
+            updateTimeInfos(total);
+        }
+
+        function updateTimeInfos(total) {
+            document.getElementById("total").innerHTML = "total " + tryToGetFormattedDate(total+workTimeSinceLastIn(), utc=true);
+            let togo = (60*60*8*1000) - total - workTimeSinceLastIn();
+            document.getElementById("togo").innerHTML = "to go " + tryToGetFormattedDate(togo, utc=true);
+            let eta = Date.now() + togo;
+            document.getElementById("eta").innerHTML = "eta " + tryToGetFormattedDate(eta, utc=true);
+        }
+
         initStatusButton();
-    }
-}
+        renderTimes();
+        window.setInterval(renderTimes, 1000);
 
-function renderTimes() {
-    area = document.getElementById("timeTable");
-}
-
-initStatusButton();
     </script>
 </body>
 </html> 

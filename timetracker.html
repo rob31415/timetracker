@@ -217,7 +217,7 @@
             let togo = (60*60*8*1000) - total - workTimeSinceLastIn();
             document.getElementById("togo").innerHTML = "to go " + tryToGetFormattedDate(togo, utc=true);
             let eta = Date.now() + togo;
-            document.getElementById("eta").innerHTML = "eta " + tryToGetFormattedDate(eta, utc=true);
+            document.getElementById("eta").innerHTML = "eta " + tryToGetFormattedDate(eta);
         }
 
         initStatusButton();

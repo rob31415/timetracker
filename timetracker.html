@@ -13,7 +13,7 @@
 
     <center>
     <h1>t❣metracker</h1>
-    <div>
+    <div id="status">
         <ul>
             <li id="total"></li>
             <li id="togo"></li>
@@ -22,7 +22,13 @@
     </div>
     <button type="button" onclick="statusButtonClicked()" id="inout"></button>
     <table id="timeTable"></table>
-    <button type="button" onclick="resetButtonClicked()" id="reset">reset</button>
+    <div id="settime"> <!-- onclick="document.getElementById('settime').classList.toggle('closed');"- -->
+        <input id="h" type="number" min="0" max="23" placeholder="hours">
+        <input id="m" type="number" min="0" max="59" placeholder="minutes">
+        <br>
+        <button type="button" onclick="resetButtonClicked()" id="reset">reset</button>
+        <!--h2>&#x21f3</h2-->
+    </div>
     </center>
 
 
@@ -31,11 +37,30 @@
         body {
             font-family: Helvetica;
         }
-        div {
+        input[type="number"] {
+            position: relative;
+            border: 1px solid #BBB;
+            border-color: #BBB #ECECEC #ECECEC #BBB;
+            padding: .2rem;
+            margin: 20px 5px 10px;
+            max-width: 30px;
+        }
+        #status {
             background-color: grey;
             color: white;
             font-size: 20px;
             padding: 1px;
+        }
+        #settime {
+            overflow-y: hidden;
+            /*background-color: lightgrey;*/
+            max-height: 500px; /* approximate max height */
+            transition-property: all;
+            transition-duration: .5s;
+            transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+        }
+        #settime.closed {
+            max-height: 40px;
         }
         ul {
             padding: 0px;
@@ -66,7 +91,6 @@
         #reset {
             background: rgb(194, 66, 66) linear-gradient(to bottom, rgb(194, 66, 66) 5%, rgb(156, 62, 62) 100%) repeat scroll 0% 0%;
         }
-
         table  {
             text-align: center;
             border-color:#ccc;
@@ -214,7 +238,9 @@
 
         function updateTimeInfos(total) {
             document.getElementById("total").innerHTML = "total " + tryToGetFormattedDate(total+workTimeSinceLastIn(), utc=true);
-            let togo = (60*60*8*1000) - total - workTimeSinceLastIn();
+            m = parseInt(document.getElementById('m').value);
+            h = parseInt(document.getElementById('h').value);
+            let togo = ((1000*60*60*h) + (1000*60*m)) - total - workTimeSinceLastIn();
             document.getElementById("togo").innerHTML = "to go " + tryToGetFormattedDate(togo, utc=true);
             let eta = Date.now() + togo;
             document.getElementById("eta").innerHTML = "eta " + tryToGetFormattedDate(eta);
